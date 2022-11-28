@@ -1,10 +1,15 @@
 'use client';
 import React, { useState } from 'react';
+import useSWR from 'swr';
 import { v4 as uuid } from 'uuid';
 import { Message } from '../typing';
+import fetcher from '../utils/fetchMessages';
 const ChatInput = () => {
   const [input, setInput] = useState('');
-  const addMessage = (e: any) => {
+  const { data: messages, error, mutate } = useSWR('/api/getMessages', fetcher);
+  console.log(messages);
+
+  const addMessage = async (e: any) => {
     e.preventDefault();
     if (!input) return;
     const messageToSend = input;
@@ -21,21 +26,25 @@ const ChatInput = () => {
     };
 
     const uploadMessageToUpstash = async () => {
-      const res = await fetch('/api/addMessage', {
+      const data = await fetch('/api/addMessage', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ message }),
-      });
+      }).then((res) => res.json());
 
-      const data = await res.json();
+      return [data.message, ...messages!];
     };
+    await mutate(uploadMessageToUpstash, {
+      optimisticData: [message, ...messages!],
+      rollbackOnError: true,
+    });
   };
   return (
     <form
       onSubmit={addMessage}
-      className="fixed bottom-0 z-50 w-full flex px-10 py-5 space-x-2 border-gray-100">
+      className="fixed bottom-0 z-50 w-full flex px-10 py-5 space-x-2 border-gray-100 bg-white">
       <input
         type="text"
         className="flex-1 rounded border-t border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-trasparent px-2 py-3 disabled:opacity-50 disbled:cursor-not-allowed"
