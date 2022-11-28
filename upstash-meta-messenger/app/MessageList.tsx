@@ -17,6 +17,7 @@ const MessageList = () => {
   useEffect(() => {
     const channel = clientPusher.subscribe('message');
     channel.bind('new-message', async (data: Message) => {
+      if (messages?.find((message) => message.id === data.id)) return;
       if (!messages) {
         mutate(fetcher);
       } else {
