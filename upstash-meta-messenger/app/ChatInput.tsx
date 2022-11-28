@@ -52,6 +52,7 @@ const ChatInput = () => {
         value={input}
         onChange={(e) => setInput(e.target.value)}
       />
+      
       <button
         type="submit"
         disabled={!input}
