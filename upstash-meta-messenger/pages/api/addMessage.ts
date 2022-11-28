@@ -1,3 +1,4 @@
+import { serverPusher } from './../../pusher';
 import { Message } from './../../typing.d';
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next';
@@ -21,6 +22,8 @@ export default async function handler(
   const newMessage = { ...message, created_at: Date.now() };
   //push to upstash redis db;
   await redis.hset('messages', message.id, newMessage);
+
+  serverPusher.trigger('messages', 'new-message', newMessage);
 
   res.status(200).json({ message: newMessage });
 }
