@@ -6,7 +6,10 @@ import { Message } from '../typing';
 import MessageComponent from './MessageComponent';
 import { clientPusher } from '../pusher';
 
-const MessageList = () => {
+type Props = {
+  initialMessages: Message;
+};
+const MessageList = ({ initialMessages }: Props) => {
   const {
     data: messages,
     error,
@@ -27,11 +30,16 @@ const MessageList = () => {
         });
       }
     });
+
+    return () => {
+      channel.unbind_all();
+      channel.unsubscribe();
+    };
   }, [messages, mutate, clientPusher]);
 
   return (
     <div className="space-y-5 px-5 pt-8 pb-32 xl:max-w-4xl mx-auto">
-      {messages?.map((message) => (
+      {(messages || initialMessages)?.map((message) => (
         <div key={message.id}>
           <MessageComponent key={message.id} message={message} />
         </div>
